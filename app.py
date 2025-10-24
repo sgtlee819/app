@@ -190,7 +190,11 @@ for i, tab in enumerate(tabs):
                 unsafe_allow_html=True,
             )
 
-        user_text = st.chat_input("궁금한 걸 입력해 보세요!", key=history_key + "_input")
+        if i == 0:
+        user_text = st.chat_input("궁금한 걸 입력해 보세요!", key="moon_input")
+        else:
+            user_text = st.chat_input("궁금한 걸 입력해 보세요!", key="solar_input")
+
         if user_text:
             if i == 0 and not conf["check_topic"](user_text):
                 st.session_state[history_key].append({
