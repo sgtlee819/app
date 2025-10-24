@@ -8,10 +8,8 @@ import traceback
 
 st.set_page_config(page_title="달 & 태양계 통합 챗봇", page_icon="🌙", layout="wide")
 
-# 날짜, 시각 정보
-now = datetime.now()
-date_str = now.strftime("%Y-%m-%d")
-time_str = now.strftime("%H:%M")
+# 날짜 정보만 표시
+date_str = datetime.now().strftime("%Y-%m-%d")
 
 # ==== 1. prompt.yaml 로드 ====
 DEFAULT_PROMPTS = {
@@ -133,12 +131,12 @@ st.markdown(
     f"""
     <div class="hero">
       <h1>🌙 달 & 🪐 태양계 통합 챗봇</h1>
-      <p>왼쪽 탭에서 챗봇 선택!  빠른 질문, 채팅 입력으로 질문해보세요.</p>
+      <p>탭에서 챗봇 선택!  빠른 질문, 채팅 입력으로 질문해보세요.</p>
     </div>""",
     unsafe_allow_html=True,
 )
 
-# ==== 7. 탭 UI로 챗봇 전환 (좌측, 학년/이름/반 없음) ====
+# ==== 7. 탭 UI로 챗봇 전환 (학년/이름/반 UI 완전 제거) ====
 tabs = st.tabs(["🌙 달 챗봇 (루나)", "🌞 태양계 챗봇 (코스모스)"])
 tabmap = {
     "🌙 달 챗봇 (루나)": {
@@ -163,26 +161,22 @@ tabmap = {
 for i, tab in enumerate(tabs):
     conf = list(tabmap.values())[i]
     with tab:
-        # 오늘의 정보
         st.markdown(
             f"""<div class='info-box'>
             <b>🗓️ 오늘의 정보</b><br>
-            날짜 : {date_str}<br>
-            시각 : {time_str}
+            날짜 : {date_str}
             </div>""",
             unsafe_allow_html=True,
         )
 
         history_key = conf["key"]
         if not st.session_state[history_key]:
-            st.session_state[history_key] = [{"role": "assistant", "content":
-                "안녕하세요! 무엇이든 물어보세요!"}]
+            st.session_state[history_key] = [{"role": "assistant", "content": "안녕하세요! 무엇이든 물어보세요!"}]
 
-        # 빠른 질문
         st.markdown("#### 🚀 빠른 질문")
         cols = st.columns(4)
         for idx, (label, question) in enumerate(conf["quicks"].items()):
-            if cols[idx % 4].button(label, use_container_width=True, key=f"{history_key}_btn_{idx}"):
+            if cols[idx % 4].button(label, use_container_width=True, key=history_key + "_btn_" + str(idx)):
                 st.session_state[history_key].append({"role": "user", "content": question})
 
         # 대화 출력
@@ -196,10 +190,8 @@ for i, tab in enumerate(tabs):
                 unsafe_allow_html=True,
             )
 
-        # 입력 및 응답
-        user_text = st.chat_input("궁금한 걸 입력해 보세요!", key=f"{history_key}_input")
+        user_text = st.chat_input("궁금한 걸 입력해 보세요!", key=history_key + "_input")
         if user_text:
-            # 달 챗봇은 주제 판별
             if i == 0 and not conf["check_topic"](user_text):
                 st.session_state[history_key].append({
                     "role": "assistant",
@@ -208,10 +200,9 @@ for i, tab in enumerate(tabs):
             else:
                 st.session_state[history_key].append({"role": "user", "content": user_text})
 
-        # 응답 생성
         if st.session_state[history_key] and st.session_state[history_key][-1]["role"] == "user":
             with st.spinner(conf["spinner"]):
-                messages = st.session_state[history_key][-8:] # 문맥 유지
+                messages = st.session_state[history_key][-8:]
                 sys_prompt = conf["sys"]
                 messages_for_llm = [{"role": "system", "content": sys_prompt}] + messages
                 if client:
