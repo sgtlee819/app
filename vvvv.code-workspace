@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../vvvv"
+		},
+		{
+			"path": "../Solarbot"
+		},
+		{
+			"path": "../lunarbot"
+		}
+	],
+	"settings": {}
+}
